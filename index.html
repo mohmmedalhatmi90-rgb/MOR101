@@ -1,0 +1,1582 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حاسبة استيراد السيارات الأمريكية</title>
+    <!-- Tajawal Font & FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-blue: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-light: #f8fafc;
+            --card-bg: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --danger-color: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Login Modal Overlay */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(4px);
+        }
+
+        .login-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 380px;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .login-card h2 {
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        .login-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+        }
+
+        .login-error {
+            background: #fee2e2;
+            color: var(--danger-color);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--card-bg);
+            border-left: 1px solid var(--border-color);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .logo {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--primary-blue);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-profile-badge {
+            background: #f1f5f9;
+            padding: 10px 14px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+
+        .nav-item.active, .nav-item:hover {
+            background: #eff6ff;
+            color: var(--primary-blue);
+        }
+
+        /* Main Content */
+        .main-container {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+        }
+
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .header-title h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .btn-outline { background: white; border: 1px solid var(--border-color); color: var(--text-dark); }
+        .btn-outline:hover { background: #f1f5f9; }
+
+        .btn-edit {
+            background: #e2e8f0;
+            color: var(--text-dark);
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-left: 4px;
+        }
+        .btn-edit:hover {
+            background: #cbd5e1;
+        }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: var(--danger-color);
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-delete:hover {
+            background: #fca5a5;
+            color: #b91c1c;
+        }
+
+        /* Dashboard Layout */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .input-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .input-control:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .vin-badge {
+            margin-top: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: none;
+        }
+
+        .vin-badge.success { background: #dcfce7; color: #166534; display: flex; align-items: center; gap: 6px; }
+        .vin-badge.info { background: #e0f2fe; color: #075985; display: flex; align-items: center; gap: 6px; }
+
+        .car-details-box {
+            margin-top: 8px;
+            padding: 10px 14px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #334155;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Custom Searchable Select Styling */
+        .search-box-container {
+            position: relative;
+        }
+
+        .search-results-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .search-item:hover {
+            background-color: #eff6ff;
+            color: var(--primary-blue);
+        }
+
+        /* Summary Sidebar Panel */
+        .summary-card {
+            position: sticky;
+            top: 32px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+        }
+
+        .summary-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 16px 0;
+        }
+
+        .total-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .total-box .price-omr {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary-blue);
+        }
+
+        .total-box .price-usd {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .saved-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .saved-table th, .saved-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: right;
+            font-size: 0.9rem;
+        }
+
+        .saved-table th { background: #f8fafc; font-weight: 700; }
+
+        /* Added panels: live bidding, invoice and user administration */
+        .feature-section { display: none; margin-top: 32px; }
+        .feature-section.visible { display: block; }
+        .admin-grid { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: end; }
+
+        /* Media Queries - Responsive Design for Mobile */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                padding: 16px;
+                gap: 16px;
+                border-left: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .main-container {
+                padding: 16px;
+            }
+
+            .top-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .grid-layout {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .summary-card {
+                position: static;
+            }
+
+            .saved-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+            .admin-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Login Modal Screen -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-card">
+            <div class="logo" style="justify-content: center; margin-bottom: 16px;">
+                <i class="fa-solid fa-car-side"></i>
+                <span>حاسبة الاستيراد الذكية</span>
+            </div>
+            <h2>تسجيل الدخول</h2>
+            <p>يرجى إدخال اسم المستخدم وكلمة المرور للوصول لحسابك</p>
+            
+            <div id="loginError" class="login-error">اسم المستخدم أو كلمة المرور غير صحيحة</div>
+
+            <div class="form-group" style="text-align: right;">
+                <label>اسم المستخدم:</label>
+                <input type="text" id="usernameInput" class="input-control" placeholder="اسم المستخدم">
+            </div>
+            <div class="form-group" style="text-align: right;">
+                <label>كلمة المرور:</label>
+                <input type="password" id="passwordInput" class="input-control" placeholder="كلمة المرور">
+            </div>
+            <button class="btn" style="width: 100%; background: var(--primary-blue); color: white; justify-content: center; margin-top: 8px;" onclick="handleLogin()">
+                <i class="fa-solid fa-right-to-bracket"></i> دخول
+            </button>
+        </div>
+    </div>
+
+    <!-- Sidebar Menu -->
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-car-side"></i>
+            <span>حاسبة الاستيراد الذكية</span>
+        </div>
+
+        <div class="user-profile-badge">
+            <span><i class="fa-solid fa-user-circle"></i> <span id="currentUserDisplay">زائر</span></span>
+            <button class="logout-btn" onclick="handleLogout()" title="تسجيل الخروج"><i class="fa-solid fa-right-from-bracket"></i></button>
+        </div>
+
+        <ul class="nav-menu">
+            <li class="nav-item active"><i class="fa-solid fa-calculator"></i> حاسبة جديدة</li>
+            <li class="nav-item" onclick="document.getElementById('savedSection').scrollIntoView({behavior: 'smooth'})"><i class="fa-solid fa-bookmark"></i> الحسابات المحفوظة</li>
+            <li class="nav-item" id="adminNavItem" style="display: none;" onclick="openAdminPanel()"><i class="fa-solid fa-users-gear"></i> إدارة المستخدمين</li>
+        </ul>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        
+        <div class="top-header">
+            <div class="header-title">
+                <h1>حاسبة استيراد السيارات الأمريكية</h1>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-outline" onclick="saveCurrentQuote()"><i class="fa-solid fa-floppy-disk"></i> حفظ الحسبة</button>
+            </div>
+        </div>
+
+        <div class="grid-layout">
+            
+            <div class="inputs-column">
+                
+                <!-- Vehicle & Auction Detection Card -->
+                <div class="card">
+                    <div class="card-title"><i class="fa-solid fa-barcode"></i> بيانات الشاصي والمزاد</div>
+                    <div class="form-group">
+                        <label>رابط المزاد أو رقم الشاصي (VIN):</label>
+                        <input type="text" id="vinInput" class="input-control" placeholder="أدخل رقم الشاصي أو الرابط للتحدد التلقائي..." oninput="processVIN()">
+                        <div id="vinStatus" class="vin-badge"></div>
+                        <div id="carDetails" class="car-details-box"></div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px;">
+                        <div class="form-group">
+                            <label>المزاد المحدد:</label>
+                            <select id="auctionSelect" class="input-control" onchange="calculateTotal()">
+                                <option value="copart">Copart (كوبارت)</option>
+                                <option value="iaai">IAAI (إياي)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>مبلغ المزايدة ($):</label>
+                            <input type="number" id="bidAmount" class="input-control" placeholder="أدخل المبلغ بالدولار..." oninput="calculateTotal()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Search State Selection -->
+                <div class="card">
+                    <div class="card-title"><i class="fa-solid fa-ship"></i> شحن المزاد (البرّي والبحري)</div>
+                    <div class="form-group search-box-container">
+                        <label>ابحث عن الولاية أو المدينة:</label>
+                        <input type="text" id="stateSearchInput" class="input-control" placeholder="ابحث بكتابة أول الأحرف (مثال: TX, CA...)" onkeyup="filterStates()" onfocus="showStatesList()">
+                        <div id="searchResults" class="search-results-list"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Cost Breakdown Column -->
+            <div class="summary-column">
+                <div class="card summary-card">
+                    <div class="card-title"><i class="fa-solid fa-file-invoice-dollar"></i> ملخص التكلفة</div>
+                    
+                    <div class="summary-row">
+                        <span>سعر السيارة:</span>
+                        <span id="outBidUSD">$0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>رسوم المزاد الأساسية:</span>
+                        <span id="outAuctionFeeUSD">$0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>رسوم البيئة الثابتة:</span>
+                        <span>$15</span>
+                    </div>
+
+                    <div class="summary-divider"></div>
+
+                    <div class="summary-row">
+                        <span>شحن المزاد (البرّي والبحري):</span>
+                        <span id="outShippingOMR">0 ر.ع</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>رسوم مخاطر الحرب الثابتة:</span>
+                        <span>309 ر.ع</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>الجمارك المقررة:</span>
+                        <span id="outCustomsOMR">0 ر.ع</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>ضريبة القيمة المضافة (VAT 5%):</span>
+                        <span id="outVatOMR">0 ر.ع</span>
+                    </div>
+
+                    <div class="summary-divider"></div>
+
+                    <div class="total-box">
+                        <div style="font-size: 0.85rem; color: var(--text-muted);">التكلفة الإجمالية التقديرية</div>
+                        <div class="price-omr" id="finalTotalOMR">0 ر.ع</div>
+                        <div class="price-usd" id="finalTotalUSD">($0)</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Saved Calculations Area -->
+        <div class="card" id="savedSection" style="margin-top: 32px;">
+            <div class="card-title"><i class="fa-solid fa-bookmark"></i> الحسابات المحفوظة مؤخراً</div>
+            <table class="saved-table">
+                <thead>
+                    <tr>
+                        <th>رقم الشاصي / الوصف</th>
+                        <th>المزاد</th>
+                        <th>قيمة الشراء</th>
+                        <th>الإجمالي (ر.ع)</th>
+                        <th style="text-align: center;">إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="savedTableBody">
+                    <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">لا توجد حسابات محفوظة حالياً</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <section id="adminSection" class="feature-section">
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-users-gear"></i> إدارة المستخدمين</div>
+                <div class="admin-grid">
+                    <div class="form-group"><label>اسم المستخدم</label><input id="newUsername" class="input-control" type="text"></div>
+                    <div class="form-group"><label>كلمة المرور</label><input id="newPassword" class="input-control" type="password"></div>
+                    <button class="btn" style="background: var(--primary-blue); color:white; margin-bottom:16px;" onclick="addUser()">إضافة حساب</button>
+                </div>
+                <table class="saved-table"><thead><tr><th>اسم المستخدم</th><th style="text-align:center;">إجراء</th></tr></thead><tbody id="usersTableBody"></tbody></table>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Calculation Engine & Session JS Logic -->
+    <script>
+        // Users Authentication DB
+        const validUsers = { "mohammed": "9090" };
+        const CUSTOM_USERS_KEY = 'smart_calc_custom_users';
+
+        let currentUser = null;
+        const USD_TO_OMR = 0.385;
+        let savedQuotes = [];
+        let currentShippingCostOMR = 0;
+        let currentCarDescription = '';
+
+        function getCustomUsers() { return JSON.parse(localStorage.getItem(CUSTOM_USERS_KEY) || '{}'); }
+        function getAllUsers() { return { ...validUsers, ...getCustomUsers() }; }
+        function isAdmin() { return currentUser && currentUser.toLowerCase() === 'mohammed'; }
+        function updateAdminAccess() {
+            document.getElementById('adminNavItem').style.display = isAdmin() ? 'flex' : 'none';
+            if (isAdmin()) renderUsers();
+        }
+
+        // Auto Login Checking on Startup
+        window.addEventListener('DOMContentLoaded', () => {
+            const loggedUser = localStorage.getItem('smart_calc_session_user');
+            if (loggedUser && getAllUsers()[loggedUser.toLowerCase()]) {
+                currentUser = loggedUser;
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('currentUserDisplay').innerText = currentUser;
+                loadSavedQuotesForUser();
+                updateAdminAccess();
+            } else {
+                document.getElementById('loginOverlay').style.display = 'flex';
+            }
+        });
+
+        function handleLogin() {
+            const userInput = document.getElementById('usernameInput').value.trim();
+            const passInput = document.getElementById('passwordInput').value.trim();
+            const userLower = userInput.toLowerCase();
+
+            const allUsers = getAllUsers();
+            if (allUsers[userLower] && allUsers[userLower] === passInput) {
+                currentUser = userInput;
+                localStorage.setItem('smart_calc_session_user', currentUser);
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('loginError').style.display = 'none';
+                document.getElementById('currentUserDisplay').innerText = currentUser;
+                loadSavedQuotesForUser();
+                updateAdminAccess();
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('smart_calc_session_user');
+            currentUser = null;
+            updateAdminAccess();
+            document.getElementById('usernameInput').value = '';
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('loginOverlay').style.display = 'flex';
+        }
+
+        function loadSavedQuotesForUser() {
+            if (!currentUser) return;
+            const data = localStorage.getItem(`saved_quotes_${currentUser.toLowerCase()}`);
+            savedQuotes = data ? JSON.parse(data) : [];
+            renderSavedQuotes();
+        }
+
+        function saveQuotesToStorage() {
+            if (!currentUser) return;
+            localStorage.setItem(`saved_quotes_${currentUser.toLowerCase()}`, JSON.stringify(savedQuotes));
+        }
+
+        const statesList = [
+              { name: 'Abilene - Abilene - TX', cost: 606 },
+    { name: 'ADAMSBURGH - ADAMSBURGH - NY', cost: 633 },
+    { name: 'ADELANTO - ADELANTO - CA', cost: 822 },
+    { name: 'ADESA Des Moines - ADESA Des Moines - NY', cost: 784 },
+    { name: 'AKRON-CANTON - NEW PHILADELPHIA - NY', cost: 668 },
+    { name: 'ALBANY - ALBANY - NY', cost: 571 },
+    { name: 'ALBANY - Amsterdam - NY', cost: 571 },
+    { name: 'ALBANY (IAA) - SCHENECTADY - NY', cost: 571 },
+    { name: 'ALBUQUERQUE - ALBUQUERQUE - CA', cost: 923 },
+    { name: 'ALBUQUERQUE - ALBUQUERQUE - TX', cost: 697 },
+    { name: 'Alexandria - Alexandria - NY', cost: 706 },
+    { name: 'ALTOONA - EBENSBURG - NY', cost: 620 },
+    { name: 'ALTOONA (IAA) - EAST FREEDOM - NY', cost: 620 },
+    { name: 'Amarillo - Amarillo - TX', cost: 620 },
+    { name: 'Amelia - Amelia - NY', cost: 648 },
+    { name: 'ANAHEIM - Anaheim - CA', cost: 788 },
+    { name: 'Andrews - Andrews - TX', cost: 620 },
+    { name: 'ANTELOPE - Antelope - CA', cost: 865 },
+    { name: 'Appleton - Appleton - NY', cost: 726 },
+    { name: 'Arlington - Arlington - TX', cost: 531 },
+    { name: 'ASHEVILLE - FLETCHER - GA', cost: 533 },
+    { name: 'ASHLAND - ASHLAND - GA', cost: 629 },
+    { name: 'ASHLAND. - ASHLAND - NY', cost: 629 },
+    { name: 'Athens - Athens - GA', cost: 562 },
+    { name: 'Atlanta - Manheim & IAAI - Atlanta - GA', cost: 513 },
+    { name: 'Atlanta East - Loganville - GA', cost: 513 },
+    { name: 'Atlanta East - Winder - GA', cost: 515 },
+    { name: 'Atlanta North - Acworth - GA', cost: 513 },
+    { name: 'Atlanta North - Gainesville - GA', cost: 517 },
+    { name: 'Atlanta North - Jefferson - GA', cost: 529 },
+    { name: 'Atlanta North - ROCKMART - GA', cost: 523 },
+    { name: 'Atlanta South - Cartersville ,Lake City - GA', cost: 517 },
+    { name: 'Atlanta South - Ellenwood - GA', cost: 513 },
+    { name: 'Atlanta West - Austell - GA', cost: 513 },
+    { name: 'AUGUSTA - AUGUSTA - GA', cost: 494 },
+    { name: 'Austin - Austin - TX', cost: 560 },
+    { name: 'Austin North - FLORENCE - TX', cost: 562 },
+    { name: 'AVENEL - AVENEL - NY', cost: 535 },
+    { name: 'BAKERSFIELD - Bakersfield - CA', cost: 817 },
+    { name: 'BALTIMORE - BALTIMORE - NY', cost: 591 },
+    { name: 'BALTIMORE - Finksburg - NY', cost: 591 },
+    { name: 'BALTIMORE EAST - BALTIMORE EAST - NY', cost: 591 },
+    { name: 'BALTIMORE EAST - WHITE MARSH - NY', cost: 591 },
+    { name: 'BARBERTON - BARBERTON - NY', cost: 648 },
+    { name: 'BARTLETT - - - NY', cost: 648 },
+    { name: 'Baton Rouge - Carville - TX', cost: 591 },
+    { name: 'Baton Rouge - Greenwell Springs - TX', cost: 581 },
+    { name: 'BILLING * (Difficult Area) - BILLING - CA', cost: 1096 },
+    { name: 'BIRMINGHAM - GA', cost: 548 },
+    { name: 'BIRMINGHAM - Birmingham - GA', cost: 548 },
+    { name: 'Bismarck - Bismarck - NY', cost: 977 },
+    { name: 'BORDENTOWN - BORDENTOWN - NY', cost: 564 },
+    { name: 'BOSTON SHIRLEY - SHIRLEY - NY', cost: 600 },
+    { name: 'BOWLING GREEN - BOWLING GREEN - GA', cost: 602 },
+    { name: 'BRIDGEPORT - BRIDGEPORT - NY', cost: 567 },
+    { name: 'Bristol - Bristol - NY', cost: 629 },
+    { name: 'BUCKHANNON - BUCKHANNON - NY', cost: 687 },
+    { name: 'BUFFALO - ALDEN - NY', cost: 687 },
+    { name: 'BUFFALO - ANGOLA - NY', cost: 648 },
+    { name: 'BURBANK - Burbank - CA', cost: 788 },
+    { name: 'BURLINGTON - ESSEX - NY', cost: 668 },
+    { name: 'CANDIA - CANDIA - NY', cost: 625 },
+    { name: 'CARSON - Gardena - CA', cost: 797 },
+    { name: 'CASPER - MADISON - NY', cost: 899 },
+    { name: 'CASPER WEST - CASPER WEST - CA', cost: 1260 },
+    { name: 'CASPER* - Casper - CA', cost: 1260 },
+    { name: 'Cedar Rapids - Cedar Rapids - NY', cost: 803 },
+    { name: 'CENTRAL New Jersey - MORGANVILLE - NY', cost: 533 },
+    { name: 'CHAMBERSBURG - CHAMBERSBURG - NY', cost: 610 },
+    { name: 'CHANDLER. - Chandler - CA', cost: 840 },
+    { name: 'CHARLES CITY - CHARLES CITY - NY', cost: 610 },
+    { name: 'CHARLESTON - Hurricane - NY', cost: 687 },
+    { name: 'Charleston/North - Charleston Ravenel - GA', cost: 500 },
+    { name: 'CHARLOTTE - CHARLOTTE - GA', cost: 517 },
+    { name: 'CHATTANOOGA - CHATTANOOGA - GA', cost: 558 },
+    { name: 'CHICAGO - CHICAGO - NY', cost: 668 },
+    { name: 'CHICAGO NORTH - East Dundee - NY', cost: 677 },
+    { name: 'CHICAGO NORTH - ELGIN - NY', cost: 677 },
+    { name: 'CHICAGO SOUTH - CHICAGO HEIGHTS - NY', cost: 677 },
+    { name: 'CHICAGO WEST - AURORA - NY', cost: 677 },
+    { name: 'Chicago-South - Markham - NY', cost: 687 },
+    { name: 'CHINA GROVE - CHINA GROVE - GA', cost: 523 },
+    { name: 'CICERO - CICERO - NY', cost: 687 },
+    { name: 'CINCINNATI - WEST CHESTER - NY', cost: 648 },
+    { name: 'CINCINNATI-SOUTH - AMELIA - NY', cost: 648 },
+    { name: 'CLEARWATER - Clearwater - GA', cost: 523 },
+    { name: 'Clermont - Clermont, CarMax - GA', cost: 421 },
+    { name: 'CLEVELAND - LORAIN - NY', cost: 648 },
+    { name: 'CLEVELAND - VERMILION - NY', cost: 668 },
+    { name: 'CLEVELAND EAST - NORTHFIELD - NY', cost: 648 },
+    { name: 'CLEVELAND WEST - COLUMBIA STATION - NY', cost: 648 },
+    { name: 'CLEWISTON SUBLOT - Clewiston - GA', cost: 542 },
+    { name: 'Colonial Heights - NY', cost: 668 },
+    { name: 'Colorado Springs - - - CA', cost: 961 },
+    { name: 'Colorado Springs - - - TX', cost: 716 },
+    { name: 'COLUMBIA - COLUMBIA - TX', cost: 677 },
+    { name: 'Columbia. - Gaston - GA', cost: 504 },
+    { name: 'Columbus - Columbus - NY', cost: 687 },
+    { name: 'COLUMBUS (IAA) - GROVE CITY - NY', cost: 648 },
+    { name: 'CONCORD - CONCORD - GA', cost: 527 },
+    { name: 'CONOWINGO - CONOWINGO - NY', cost: 591 },
+    { name: 'COOPERSBURG - COOPERSBURG - NY', cost: 591 },
+    { name: 'COPLAY - COPLAY - NY', cost: 591 },
+    { name: 'Cudahy - Cudahy - NY', cost: 726 },
+    { name: 'Culpeper - CULPEPER - NY', cost: 610 },
+    { name: 'Cusseta - Cusseta, COPART - GA', cost: 591 },
+    { name: 'Dallas - Grand Prairie - TX', cost: 560 },
+    { name: 'Dallas /Ft, Worth-Tx - Dallas /Ft, Worth-Tx - TX', cost: 562 },
+    { name: 'Dallas South - Dallas South - TX', cost: 558 },
+    { name: 'Dallas South - WILMER - TX', cost: 560 },
+    { name: 'Dalton - MANHEIM, Dalton - GA', cost: 610 },
+    { name: 'Danville - BEDFORD - NY', cost: 629 },
+    { name: 'Danville - Chatham - NY', cost: 629 },
+    { name: 'Danville - DANVILLE - NY', cost: 629 },
+    { name: 'Darlington - Darlington - GA', cost: 510 },
+    { name: 'Darlington - Darlington Manheim - GA', cost: 533 },
+    { name: 'DAVENPORT - ELDRIDGE - NY', cost: 710 },
+    { name: 'DAYTON (COPART & IAAI) - Moraine Dayton - NY', cost: 648 },
+    { name: 'DAYTONA BEACH - MANHEIM - DAYTONA BEACH - MANHEIM - GA', cost: 523 },
+    { name: 'Defuniak Springs - Defuniak Springs - GA', cost: 803 },
+    { name: 'Denver - Brighton - CA', cost: 929 },
+    { name: 'Denver - Brighton - TX', cost: 716 },
+    { name: 'Denver - Denver - TX', cost: 735 },
+    { name: 'DENVER CENTRAL - DENVER - CA', cost: 929 },
+    { name: 'DENVER CENTRAL - DENVER - TX', cost: 716 },
+    { name: 'Denver East - - - CA', cost: 929 },
+    { name: 'Denver East - - - TX', cost: 716 },
+    { name: 'Denver South - Commerce City - CA', cost: 929 },
+    { name: 'Denver South - Commerce City - TX', cost: 716 },
+    { name: 'DES MOINES - DE SOTO - NY', cost: 710 },
+    { name: 'DES MOINES - DES MOINES - NY', cost: 784 },
+    { name: 'DETROIT - Belleville - NY', cost: 668 },
+    { name: 'DETROIT - WOODHAVEN - NY', cost: 677 },
+    { name: 'DIVISION - DIVISION - NY', cost: 668 },
+    { name: 'Donna - Donna - TX', cost: 560 },
+    { name: 'DOTHAN - HEADLAND - GA', cost: 548 },
+    { name: 'Douglasville - Douglasville - GA', cost: 504 },
+    { name: 'DOVER - DOVER - GA', cost: 513 },
+    { name: 'DUNDALK - DUNDALK - NY', cost: 591 },
+    { name: 'DYER - DYER - NY', cost: 687 },
+    { name: 'EARLINGTON - EARLINGTON - GA', cost: 610 },
+    { name: 'EAST BAY - Bay Point - CA', cost: 865 },
+    { name: 'EAST BAY - Pittsburg - CA', cost: 865 },
+    { name: 'El Dorado - MANHEIM,El Dorado - TX', cost: 735 },
+    { name: 'El Paso - Anthony - TX', cost: 616 },
+    { name: 'ELDRIDGE - - - NY', cost: 714 },
+    { name: 'ELKRIDGE - EAST TAUNTON - NY', cost: 591 },
+    { name: 'Elkton - Elkton - NY', cost: 591 },
+    { name: 'ENGLISHTOWN - CARTERET - NY', cost: 542 },
+    { name: 'ENGLISHTOWN - Manalapan - NY', cost: 533 },
+    { name: 'ERIE - GARLAND - NY', cost: 658 },
+    { name: 'EUGENE - Eugene - CA', cost: 959 },
+    { name: 'Euless - Euless - TX', cost: 542 },
+    { name: 'EXETER - EXETER - NY', cost: 610 },
+    { name: 'FAIR HAVEN - FAIR HAVEN - NY', cost: 726 },
+    { name: 'Fairburn - Fairburn - GA', cost: 523 },
+    { name: 'FARGO - FARGO - CA', cost: 1135 },
+    { name: 'FARGO - FARGO - NY', cost: 880 },
+    { name: 'FAYETTEVILLE - Lincoln (Iaa). - TX', cost: 620 },
+    { name: 'FAYETTEVILLE - Prairie Grove - TX', cost: 620 },
+    { name: 'FLINT - DAVISON - NY', cost: 672 },
+    { name: 'Florence - Florence - GA', cost: 629 },
+    { name: 'FONTANA - FONTANA - CA', cost: 791 },
+    { name: 'FONTANA - JURUPA VALLEY - CA', cost: 795 },
+    { name: 'Fontana off site - Calabash - CA', cost: 791 },
+    { name: 'Fort Collins - Fort Collins , MANHEIM - TX', cost: 793 },
+    { name: 'FORT LAUDERDALE - Manheim - GA', cost: 552 },
+    { name: 'Fort Myers - MANHEIM, Fort Myers - GA', cost: 610 },
+    { name: 'Fort Myers/North Fort Myers - - - GA', cost: 529 },
+    { name: 'FORT PIERCE - Fort Pierce - GA', cost: 533 },
+    { name: 'Fort Wayne - Fort Wayne - NY', cost: 687 },
+    { name: 'Fort Worth - Haslet - TX', cost: 552 },
+    { name: 'Fort Worth North - Fort Worth North - TX', cost: 571 },
+    { name: 'Fort Worth North - Justin - TX', cost: 571 },
+    { name: 'Fredericksburg - Fredericksburg - NY', cost: 610 },
+    { name: 'FREETOWN - Assonet - NY', cost: 606 },
+    { name: 'FREETOWN - FREETOWN - NY', cost: 606 },
+    { name: 'Fremont - Fremont - CA', cost: 884 },
+    { name: 'FRESNO - Fresno - CA', cost: 836 },
+    { name: 'FRUITLAND - FRUITLAND - NY', cost: 668 },
+    { name: 'GASTONIA - GASTONIA - GA', cost: 523 },
+    { name: 'GLASSBORO EAST/W - GLASSBORO - NY', cost: 560 },
+    { name: 'GRAHAM - Graham - CA', cost: 979 },
+    { name: 'GRAND RAPIDS - BYRON CENTER - NY', cost: 706 },
+    { name: 'GREENSBORO - GRAHAM - GA', cost: 525 },
+    { name: 'GREENVILLE - GREENVILLE - GA', cost: 627 },
+    { name: 'Greenville. - Simpsonville - GA', cost: 521 },
+    { name: 'Greer - Greer - GA', cost: 504 },
+    { name: 'GRENADA - GRENADA - GA', cost: 571 },
+    { name: 'GULF COAST - MOSS POINT - GA', cost: 571 },
+    { name: 'HAMDEN CT (M) - Commerce City - NY', cost: 571 },
+    { name: 'HAMMOND - HAMMOND - NY', cost: 687 },
+    { name: 'Hampton - Hampton - NY', cost: 620 },
+    { name: 'Harleysville - Harleysville - GA', cost: 500 },
+    { name: 'HARRISBURG - GRANTVILLE - NY', cost: 610 },
+    { name: 'Harrisonburg - Manheim Harrisonburg - NY', cost: 668 },
+    { name: 'HARTFORD - EAST WINDSOR - NY', cost: 571 },
+    { name: 'HARTFORD - NEW BRITAIN - NY', cost: 571 },
+    { name: 'HARTFORD - Plainville acv - NY', cost: 610 },
+    { name: 'HARTFORD SOUTH - MIDDLETOWN - NY', cost: 571 },
+    { name: 'HARTFORD SPRINGFIELD - East Granby - NY', cost: 571 },
+    { name: 'HAYWARD - Hayward - CA', cost: 867 },
+    { name: 'HELENA * (Difficult Area) - HELENA - CA', cost: 1096 },
+    { name: 'HIGH DESERT - Hesperia - CA', cost: 826 },
+    { name: 'HIGH POINT - HIGH POINT - GA', cost: 542 },
+    { name: 'HILO/COPART - HILO/COPART - CA', cost: 1695 },
+    { name: 'HILO/DC TOW - HILO/DC TOW - CA', cost: 1695 },
+    { name: 'HILO/TOW GUYS - HILO/TOW GUYS - CA', cost: 2081 },
+    { name: 'HONOLULU - Kapolei - CA', cost: 1540 },
+    { name: 'HONOLULUSUB LOT - LIHUE - CA', cost: 1888 },
+    { name: 'Houston - Houston North - TX', cost: 523 },
+    { name: 'Houston - Houston South - TX', cost: 523 },
+    { name: 'HOUSTON EAST - HOUSTON EAST - TX', cost: 523 },
+    { name: 'HUDSON MA - HUDSON MA - NY', cost: 610 },
+    { name: 'HUNTSVILLE - HUNTSVILLE - GA', cost: 548 },
+    { name: 'Hutchins - Hutchins - TX', cost: 533 },
+    { name: 'IAA Cat Houston - IAA Cat Houston - TX', cost: 550 },
+    { name: 'IDAHO - BOISE - CA', cost: 954 },
+    { name: 'IDAHO - MERIDIAN - CA', cost: 896 },
+    { name: 'Indianapolis - Indianapolis - NY', cost: 687 },
+    { name: 'Indianapolis south - Crothersville - NY', cost: 726 },
+    { name: 'Indianapolis south - Indianapolis south - NY', cost: 687 },
+    { name: 'IONIA - IONIA - NY', cost: 706 },
+    { name: 'IONIA - Portland - NY', cost: 706 },
+    { name: 'JACKSON - Byram - GA', cost: 571 },
+    { name: 'JACKSON - FLORENCE - GA', cost: 571 },
+    { name: 'JACKSONVILLE - Jacksonville - GA', cost: 492 },
+    { name: 'JACKSONVILLE EAST . - Jacksonville - GA', cost: 492 },
+    { name: 'JACKSONVILLE NORTH - Jacksonville - GA', cost: 492 },
+    { name: 'JACKSONVILLE WEST - Jacksonville - GA', cost: 492 },
+    { name: 'Jobstown - Jobstown - NY', cost: 571 },
+    { name: 'KANSAS CITY - KANSAS CITY - GA', cost: 648 },
+    { name: 'KANSAS CITY - KANSAS CITY - TX', cost: 677 },
+    { name: 'KANSAS CITY EAST - KANSAS CITY EAST - GA', cost: 648 },
+    { name: 'KANSAS CITY EAST - KANSAS CITY EAST - TX', cost: 677 },
+    { name: 'KANSAS CITY EAST. - KANSAS CITY EAST - TX', cost: 677 },
+    { name: 'KANSAS CITY. - MANHEIM - TX', cost: 677 },
+    { name: 'KAUAI - KAUAI - CA', cost: 1888 },
+    { name: 'KINCHELOE - KINCHELOE - NY', cost: 822 },
+    { name: 'KING GEORGE - KING GEORGE - NY', cost: 629 },
+    { name: 'KINGS MOUNTAIN - KINGS MOUNTAIN - GA', cost: 519 },
+    { name: 'KNOXVILLE - MADISONVILLE - GA', cost: 558 },
+    { name: 'KONA/BZ TRUCKING - KONA/BZ TRUCKING - CA', cost: 1965 },
+    { name: 'Lafayette - Lafayette - TX', cost: 581 },
+    { name: 'Lagrange - Lagrange - GA', cost: 552 },
+    { name: 'LANCASTER - Lancaster - CA', cost: 826 },
+    { name: 'LANSING - LANSING - NY', cost: 677 },
+    { name: 'LAS VEGAS - HENDERSON - CA', cost: 846 },
+    { name: 'LAS VEGAS - LAS VEGAS - CA', cost: 846 },
+    { name: 'LAS VEGAS NORTH - Las Vegas - CA', cost: 846 },
+    { name: 'LAS VEGAS West - LAS VEGAS West - CA', cost: 846 },
+    { name: 'Laurel - Laurel - NY', cost: 591 },
+    { name: 'Lexington - Lexington - GA', cost: 500 },
+    { name: 'LEXINGTON EAST - LEXINGTON - GA', cost: 610 },
+    { name: 'LEXINGTON WEST - Lawrenceburg - GA', cost: 610 },
+    { name: 'LINCOLN - GREENWOOD - NY', cost: 726 },
+    { name: 'LINCOLN. - LINCOLN - NY', cost: 697 },
+    { name: 'LITTLE ROCK - Conway - TX', cost: 620 },
+    { name: 'LITTLE ROCK - North Little Rock - TX', cost: 639 },
+    { name: 'LITTLE ROCK - SCOTT (IAA) - TX', cost: 620 },
+    { name: 'Littleton - Littleton - CA', cost: 929 },
+    { name: 'Littleton - Littleton - TX', cost: 716 },
+    { name: 'Livingston - Livingston - TX', cost: 591 },
+    { name: 'LONG BEACH - Wilmington - CA', cost: 786 },
+    { name: 'LONG ISLAND - BROOKHAVEN - NY', cost: 567 },
+    { name: 'LONG ISLAND - Smithtown acv - NY', cost: 629 },
+    { name: 'LONG ISLAND (IAA) - MEDFORD - NY', cost: 567 },
+    { name: 'Longview - Longview - TX', cost: 554 },
+    { name: 'LOS ANGELES - Los Angeles - CA', cost: 782 },
+    { name: 'LOS ANGELES South - LOS ANGELES south - CA', cost: 788 },
+    { name: 'LOUISVILLE - LOUISVILLE - GA', cost: 610 },
+    { name: 'LOUISVILLE - SHEPHERDSVILLE - GA', cost: 610 },
+    { name: 'LOUISVILLE NORTH - EMINENCE - GA', cost: 610 },
+    { name: 'Lubbock - Lubbock - TX', cost: 620 },
+    { name: 'Lufkin - Lufkin - TX', cost: 560 },
+    { name: 'LUMBERTON - LUMBERTON - GA', cost: 519 },
+    { name: 'LYMAN - LYMAN - NY', cost: 639 },
+    { name: 'MACK - MACK - CA', cost: 940 },
+    { name: 'Macon - Byron - GA', cost: 513 },
+    { name: 'Macon - Macon - GA', cost: 513 },
+    { name: 'MADISON - MADISON - NY', cost: 726 },
+    { name: 'MADISON SOUTH - McFarland - NY', cost: 726 },
+    { name: 'MADISONVILLE - MADISONVILLE - GA', cost: 558 },
+    { name: 'MANCHESTER - SALEM - NY', cost: 635 },
+    { name: 'Manheim Atlanta - College Park - GA', cost: 552 },
+    { name: 'MANHEIM CENTRAL FLORIDA - MANHEIM CENTRAL FLORIDA - GA', cost: 540 },
+    { name: 'Manheim Dallas - Dallas - TX', cost: 600 },
+    { name: 'Manheim Iowa - Stuart - NY', cost: 784 },
+    { name: 'Manheim King Mobile Auction - King - GA', cost: 591 },
+    { name: 'Manheim Lakeland - Lakeland - GA', cost: 533 },
+    { name: 'MANHEIM MISSISSIPPI - Hattiesburg - GA', cost: 591 },
+    { name: 'Manheim Newton - Newton - NY', cost: 581 },
+    { name: 'Manheim North Carolina - Manheim North Carolina - GA', cost: 523 },
+    { name: 'Manheim Riverside - Riverside - CA', cost: 791 },
+    { name: 'Manheim Southern California - Fontana - CA', cost: 811 },
+    { name: 'Manheim St Pete - Clearwater - GA', cost: 571 },
+    { name: 'Manheim Statesville - Statesville - GA', cost: 552 },
+    { name: 'Manheim Tampa - Tampa - GA', cost: 533 },
+    { name: 'Manheim Texas Hobby - Manheim Texas Hobby - TX', cost: 519 },
+    { name: 'Manheim Tulsa - Sapulpa - TX', cost: 658 },
+    { name: 'MARTINEZ - Martinez - CA', cost: 865 },
+    { name: 'Matteson - Matteson Manheim - NY', cost: 706 },
+    { name: 'MAUI - MAUI - CA', cost: 1888 },
+    { name: 'McAllen - Mercedes - TX', cost: 560 },
+    { name: 'MEBANE - MEBANE - GA', cost: 527 },
+    { name: 'MEMPHIS - Millington - GA', cost: 596 },
+    { name: 'MENTONE - MENTONE - CA', cost: 826 },
+    { name: 'METRO DC - BRANDYWINE - NY', cost: 591 },
+    { name: 'Metro Skyline - Fairfield - NY', cost: 571 },
+    { name: 'Metter - Metter - GA', cost: 475 },
+    { name: 'MIAMI CENTRAL - Miami - GA', cost: 540 },
+    { name: 'MIAMI NORTH - Fort Lauderdale - GA', cost: 542 },
+    { name: 'MIAMI NORTH - Miami - GA', cost: 540 },
+    { name: 'MIAMI NORTH - Opa Locka - GA', cost: 540 },
+    { name: 'MIAMI NORTH - PEMBROKE PINES - GA', cost: 542 },
+    { name: 'MIAMI NORTH - Southwest Ranches - GA', cost: 540 },
+    { name: 'MIAMI NORTH SUBLOT - - - GA', cost: 571 },
+    { name: 'MIAMI SOUTH - Homestead - GA', cost: 540 },
+    { name: 'Milwaukee - Milwaukee - NY', cost: 726 },
+    { name: 'Milwaukee - Sussex - NY', cost: 726 },
+    { name: 'MILWAUKEE NORTH - MILWAUKEE NORTH - NY', cost: 726 },
+    { name: 'MILWAUKEE SOUTH - FRANKLIN - NY', cost: 726 },
+    { name: 'MILWAUKEE SOUTH - MILWAUKEE SOUTH - NY', cost: 726 },
+    { name: 'MINNEAPOLIS - BLAINE - NY', cost: 706 },
+    { name: 'MINNEAPOLIS - FRIDLEY MN - NY', cost: 720 },
+    { name: 'MINNEAPOLIS NORTH - ELK RIVER MN - NY', cost: 720 },
+    { name: 'MINNEAPOLIS NORTH - HAM LAKE - NY', cost: 706 },
+    { name: 'MINNEAPOLIS/ ST. PA - SAINT PAUL - NY', cost: 706 },
+    { name: 'MIRALOMA - MIRALOMA - CA', cost: 793 },
+    { name: 'MISSOULA * (Difficult Area) - MISSOULA - CA', cost: 1096 },
+    { name: 'Mobile - Eight Miles - GA', cost: 548 },
+    { name: 'MOBILE SOUTH - THEODORE - GA', cost: 548 },
+    { name: 'MOCKSVILLE - MOCKSVILLE - GA', cost: 527 },
+    { name: 'MONTGOMERY - MONTGOMERY - GA', cost: 548 },
+    { name: 'Monticello (NY) - Monticello - NY', cost: 591 },
+    { name: 'MT MORRIS - MANHEIM, Mt Morris - NY', cost: 745 },
+    { name: 'NAPA - AMERICAN CANYON - CA', cost: 903 },
+    { name: 'NASHVILLE - LEBANON - GA', cost: 571 },
+    { name: 'NASHVILLE - MANHEIM, Mt. Juliet - GA', cost: 629 },
+    { name: 'NASHVILLE - OLD HI CKORY - GA', cost: 629 },
+    { name: 'NEVADA - LAS VEGAS - CA', cost: 846 },
+    { name: 'NEW BOSTON - NEW BOSTON - NY', cost: 668 },
+    { name: 'New Braunfels - New Braunfels - TX', cost: 560 },
+    { name: 'NEW CASTLE - NEW CASTLE - NY', cost: 581 },
+    { name: 'New Mexico - Manheim New Mexico - TX', cost: 716 },
+    { name: 'New Orleans - New Orleans - TX', cost: 591 },
+    { name: 'New Orleans - Slidell - TX', cost: 620 },
+    { name: 'New Orleans East - New Orleans East - TX', cost: 610 },
+    { name: 'NEWBURGH - MARLBORO - NY', cost: 562 },
+    { name: 'NEWBURGH - MARLBORO-Rock Tavern - NY', cost: 562 },
+    { name: 'NORTH BOSTON - NORTH BILLERICA - NY', cost: 594 },
+    { name: 'NORTH HOLLYWOOD - Hollywood - CA', cost: 788 },
+    { name: 'NORTH SEATTLE - Arlington - CA', cost: 961 },
+    { name: 'NORTH SEATTLE - sub lot - CA', cost: 981 },
+    { name: 'Northern New Jersey - CARTERET - NY', cost: 533 },
+    { name: 'NORTHERN VERGINIA - NORTHERN VERGINIA - NY', cost: 610 },
+    { name: 'NUNN - NUNN - CA', cost: 944 },
+    { name: 'OCALA - Ocala - GA', cost: 529 },
+    { name: 'OCOEE - Ocoee - GA', cost: 517 },
+    { name: 'Odessa - Permian Basin - IAAI - TX', cost: 610 },
+    { name: 'Odesssa - Kansas City East(MO) - TX', cost: 677 },
+    { name: 'Ogden - Farr West - CA', cost: 884 },
+    { name: 'OKEECHOBEE - Okeechobee - GA', cost: 562 },
+    { name: 'OKLAHOMA (OK) - Oklahoma City - TX', cost: 612 },
+    { name: 'OKLAHOMA (OK) - Tulsa - Tulsa - TX', cost: 612 },
+    { name: 'OMAHA - SPRINGFIELD - NY', cost: 745 },
+    { name: 'ORLANDO - Orlando - GA', cost: 517 },
+    { name: 'ORLANDO - Orlando. Manheim - GA', cost: 533 },
+    { name: 'ORLANDO North - Apopka - GA', cost: 523 },
+    { name: 'ORLANDO North - Sanford - GA', cost: 523 },
+    { name: 'ORLANDO SOUTH - Orlando - GA', cost: 517 },
+    { name: 'ORLEANS - ORLEANS - NY', cost: 668 },
+    { name: 'PADUCAH - PADUCAH - GA', cost: 629 },
+    { name: 'PADUCAH - PADUCAH. Manheim - GA', cost: 648 },
+    { name: 'PALM BEACH - MANHEIM - Palm Beach - GA', cost: 552 },
+    { name: 'PASCO* - PASCO - CA', cost: 1193 },
+    { name: 'Pelham - Pelham - GA', cost: 610 },
+    { name: 'Pennsylvania - Manheim Pennsylvania - NY', cost: 591 },
+    { name: 'PENSACOLA - Milton - GA', cost: 552 },
+    { name: 'PEORIA - PEKIN - NY', cost: 697 },
+    { name: 'Permian Basin - Odessa - TX', cost: 608 },
+    { name: 'PHILADELPHIA - Conshohocken - NY', cost: 610 },
+    { name: 'PHILADELPHIA - East (Sub lot) - NY', cost: 571 },
+    { name: 'PHILADELPHIA - Grantville - NY', cost: 571 },
+    { name: 'PHILADELPHIA - Malvern - NY', cost: 591 },
+    { name: 'PHILADELPHIA - Manheim Philadelphia - NY', cost: 591 },
+    { name: 'PHILADELPHIA - Pennsburg - NY', cost: 571 },
+    { name: 'PHILADELPHIA EAST - Adamsburg - NY', cost: 625 },
+    { name: 'PHILADELPHIA EAST - CHALFONT - NY', cost: 565 },
+    { name: 'PHOENIX - PHOENIX - CA', cost: 830 },
+    { name: 'PITTSBURG EAST - ADAMSBURG - NY', cost: 648 },
+    { name: 'PITTSBURG SOUTH - WEST MIFFLIN - NY', cost: 648 },
+    { name: 'PITTSBURGH - Aliquippa - NY', cost: 639 },
+    { name: 'PITTSBURGH - Uniontown ACV - NY', cost: 706 },
+    { name: 'PITTSBURGH NORTH - Ellwood City - NY', cost: 639 },
+    { name: 'PITTSBURGH South - West Mifflin - NY', cost: 639 },
+    { name: 'PITTSBURGH WEST - West Mifflin - NY', cost: 639 },
+    { name: 'Pittsburgh-North - Gibsonia - NY', cost: 648 },
+    { name: 'PORT MURRAY - PORT MURRAY - NY', cost: 556 },
+    { name: 'PORTAGE - PORTAGE - NY', cost: 706 },
+    { name: 'PORTLAND GORHAM - GORHAM - NY', cost: 639 },
+    { name: 'Portland North - Portland North - CA', cost: 961 },
+    { name: 'PORTLAND SOUTH - PORTLAND SOUTH - CA', cost: 961 },
+    { name: 'PORTLAND. - Portland - CA', cost: 957 },
+    { name: 'PROVIDENCE - EAST PROVIDENCE - NY', cost: 610 },
+    { name: 'Provo - Nephi - CA', cost: 903 },
+    { name: 'Pulaski - PULASKI - NY', cost: 629 },
+    { name: 'PUNTA GORDA - Punta Gorda - GA', cost: 542 },
+    { name: 'PUNTA GORDA South - Arcadia - GA', cost: 542 },
+    { name: 'PUNTA GORDA South - Sublot - GA', cost: 542 },
+    { name: 'RALEIGH - Clayton - GA', cost: 523 },
+    { name: 'RALEIGH - DUNN - GA', cost: 521 },
+    { name: 'RALEIGH NORTH - Knightdale - GA', cost: 523 },
+    { name: 'RALEIGH NORTH - RALEIGH NORTH - GA', cost: 523 },
+    { name: 'RANCHO CUCAMONGA - PERRIS SUBLOT - CA', cost: 817 },
+    { name: 'RANCHO CUCAMONGA - RANCHO CUCAMONGA - CA', cost: 807 },
+    { name: 'Randolph - Randolph - NY', cost: 726 },
+    { name: 'RAPID CITY - RAPID CITY - NY', cost: 957 },
+    { name: 'RAPID CITY - RAPID CITY - TX', cost: 948 },
+    { name: 'REDDING - REDDING - CA', cost: 961 },
+    { name: 'RENO - RENO - CA', cost: 903 },
+    { name: 'RENO - SPARKS - CA', cost: 961 },
+    { name: 'Richmond - SANDSTON - NY', cost: 629 },
+    { name: 'RICHMOND EAST - CHARLES CITY - NY', cost: 629 },
+    { name: 'RIVERSIDE - RIVERSIDE - CA', cost: 791 },
+    { name: 'ROANOKE - MONTVALE - NY', cost: 648 },
+    { name: 'ROCHESTER - Bergen - NY', cost: 639 },
+    { name: 'ROCHESTER - LEROY - NY', cost: 625 },
+    { name: 'ROSEDALE - ROSEDALE - NY', cost: 591 },
+    { name: 'RUSTBURG - RUSTBURG - NY', cost: 629 },
+    { name: 'Rutland - Rutland - NY', cost: 647 },
+    { name: 'SACRAMENTO - Sacramento - CA', cost: 865 },
+    { name: 'SAINT LOUIS - BRIDGETON - TX', cost: 677 },
+    { name: 'SAINT LOUIS - MANHEIM, Bridgeton - TX', cost: 774 },
+    { name: 'SALEM - SALEM - NY', cost: 648 },
+    { name: 'SALISBURY - SALISBURY - NY', cost: 591 },
+    { name: 'SALT LAKE CITY - MAGNA - CA', cost: 888 },
+    { name: 'SALT LAKE CITY - OGDEN - CA', cost: 888 },
+    { name: 'SALT LAKE CITY - SALT LAKE CITY - CA', cost: 888 },
+    { name: 'SALT LAKE CITY - TOOELE - CA', cost: 903 },
+    { name: 'San Antonio - Manheim San Antonio - TX', cost: 581 },
+    { name: 'San Antonio - San Antonio - TX', cost: 556 },
+    { name: 'SAN ANTONIO SOUTH - SAN ANTONIO SOUTH - TX', cost: 558 },
+    { name: 'San Antonio-South - Corpus Christi Offsite - TX', cost: 560 },
+    { name: 'SAN BERNARDINO - Colton - CA', cost: 788 },
+    { name: 'SAN DIEGO - San Diego - CA', cost: 807 },
+    { name: 'SAN JOSE - San Martin - CA', cost: 865 },
+    { name: 'San Martin - SUBLOT - CA', cost: 884 },
+    { name: 'Sant Gabriel - Sant Gabriel - TX', cost: 577 },
+    { name: 'Santa Clarita - Offsite Santa Clarita - CA', cost: 788 },
+    { name: 'SANTA PAULA* - Santa Paula - CA', cost: 817 },
+    { name: 'SAVANNAH - Rincon - GA', cost: 455 },
+    { name: 'SAYREVILLE - SAYREVILLE - NY', cost: 542 },
+    { name: 'SCRANTON - DURYEA - NY', cost: 581 },
+    { name: 'SCRANTON - Pittston - NY', cost: 579 },
+    { name: 'SEAFORD - SEAFORD - NY', cost: 591 },
+    { name: 'SEATTLE - Puyallup - CA', cost: 981 },
+    { name: 'SEATTLE - Seattle - CA', cost: 961 },
+    { name: 'SHADY SPRINGS - SHADY SPRINGS - NY', cost: 687 },
+    { name: 'SHAKOPEE - SHAKOPEE - NY', cost: 726 },
+    { name: 'Shreveport - Shreveport - TX', cost: 581 },
+    { name: 'SIKESTON - SIKESTON - TX', cost: 677 },
+    { name: 'Siloam Springs - Siloam Springs Manheim - TX', cost: 735 },
+    { name: 'SIOUX FALLS - LENNOX - NY', cost: 957 },
+    { name: 'SIOUX FALLS - LENNOX - TX', cost: 948 },
+    { name: 'SOMERVILLE - HILLSBOROUGH - NY', cost: 535 },
+    { name: 'SOMERVILLE - SOUTH AMBOY - NY', cost: 548 },
+    { name: 'South Bend - South Bend - NY', cost: 687 },
+    { name: 'SOUTH BOSTON - MENDON - NY', cost: 594 },
+    { name: 'SOUTH SACRAMENTO - SACRAMENTO - CA', cost: 865 },
+    { name: 'SOUTHERN ILLINOIS - ALORTON - NY', cost: 697 },
+    { name: 'SOUTHERN ILLINOIS - CAHOKIA HEIGHTS - NY', cost: 697 },
+    { name: 'SOUTHERN New Jersey - TURNERSVILLE - NY', cost: 552 },
+    { name: 'Spanaway - Spanaway - CA', cost: 979 },
+    { name: 'Spartanburg - Spartanburg - GA', cost: 523 },
+    { name: 'SPOKANE* - Airway Heights - CA', cost: 1077 },
+    { name: 'SPRINGFIELD - ROGERSVILLE - TX', cost: 677 },
+    { name: 'ST CLOUD - AVON - NY', cost: 726 },
+    { name: 'ST. LOUIS - Caseyville - NY', cost: 677 },
+    { name: 'ST. LOUIS - GRANITE CITY - NY', cost: 697 },
+    { name: 'ST. LOUIS - saint louis sublot - TX', cost: 677 },
+    { name: 'ST. PETE - St. Pete - GA', cost: 523 },
+    { name: 'Staten Island - Staten Island - NY', cost: 571 },
+    { name: 'STATESVILLE - STATESVILLE - GA', cost: 523 },
+    { name: 'Stockton (CA) - Stockton - CA', cost: 861 },
+    { name: 'Suffolk - Suffolk - NY', cost: 629 },
+    { name: 'SUN VALLEY - SUN VALLEY - CA', cost: 788 },
+    { name: 'SUNDANCE - PORTAGE - NY', cost: 861 },
+    { name: 'SUNDANCE* - Sundance - CA', cost: 1260 },
+    { name: 'SYRACUSE - CENTRAL SQUARE - NY', cost: 606 },
+    { name: 'SYRACUSE - Cicero - NY', cost: 610 },
+    { name: 'TALLAHASSEE . - Midway - GA', cost: 529 },
+    { name: 'TAMPA - Palmetto - GA', cost: 521 },
+    { name: 'TAMPA NORTH - Hudson - GA', cost: 523 },
+    { name: 'TAMPA NORTH - Tampa North - GA', cost: 523 },
+    { name: 'TAMPA SOUTH - Riverview - GA', cost: 523 },
+    { name: 'TAMPA SOUTH - Thonotosassa - GA', cost: 533 },
+    { name: 'TAMPA SOUTH SUBLOT - - - GA', cost: 533 },
+    { name: 'TAMPA SOUTH SUBLOT - MULBERRY - GA', cost: 540 },
+    { name: 'TANEYTOWN - TANEYTOWN - NY', cost: 591 },
+    { name: 'TANNER - TANNER - GA', cost: 548 },
+    { name: 'TAUNTON - EAST TAUNTON - NY', cost: 594 },
+    { name: 'TAUNTON - UXBRIDGE - NY', cost: 610 },
+    { name: 'TEMPLETON - TEMPLETON - NY', cost: 606 },
+    { name: 'TIDEWATER - YORKTOWN - NY', cost: 610 },
+    { name: 'Tifton - Tifton - GA', cost: 511 },
+    { name: 'TOLLESON - TOLLESON - CA', cost: 836 },
+    { name: 'TRACY - Tracy - CA', cost: 873 },
+    { name: 'TRENTON - WINDSOR - NY', cost: 535 },
+    { name: 'TUCSON - TUCSON - CA', cost: 863 },
+    { name: 'Tullahoma - MANHEIM, Tullahoma - GA', cost: 648 },
+    { name: 'Uniontown - Uniontown act - NY', cost: 726 },
+    { name: 'UTAH - WOODS CROSS - CA', cost: 902 },
+    { name: 'Utica - Utica ACV - NY', cost: 706 },
+    { name: 'VALLEJO - Vallejo - CA', cost: 884 },
+    { name: 'VALLEJO - Vallejo SUBLOT. - CA', cost: 884 },
+    { name: 'VAN NUYS - Van Nuys - CA', cost: 807 },
+    { name: 'VANCOUVER - VANCOUVER - CA', cost: 1000 },
+    { name: 'Vinton - Sulphur, Copart - TX', cost: 629 },
+    { name: 'Waco - Taylor - TX', cost: 581 },
+    { name: 'Waco - Temple City - TX', cost: 575 },
+    { name: 'Wallingford - Wallingford - NY', cost: 629 },
+    { name: 'WALTON - WALTON - GA', cost: 620 },
+    { name: 'WASHINGTON DC - WALDORF - NY', cost: 591 },
+    { name: 'WASHINGTON DC - WHITE PLAINS - NY', cost: 600 },
+    { name: 'Wayland - Wayland - NY', cost: 726 },
+    { name: 'WEBSTER - WEBSTER - NY', cost: 635 },
+    { name: 'WEST PALM BEACH - - - GA', cost: 537 },
+    { name: 'WEST WARREN - WEST WARREN - NY', cost: 594 },
+    { name: 'Westchester - Westchester - NY', cost: 687 },
+    { name: 'Western Colorado - DELTA - CA', cost: 1000 },
+    { name: 'Western Colorado - DELTA - TX', cost: 851 },
+    { name: 'WHEELING - WHEELING - NY', cost: 668 },
+    { name: 'WICHITA - Park City - TX', cost: 677 },
+    { name: 'WICHITA - WICHITA - GA', cost: 687 },
+    { name: 'WICHITA - WICHITA - TX', cost: 658 },
+    { name: 'WILMINGTON - CASTLE HAYNE - GA', cost: 523 },
+    { name: 'WINDHAM - WINDHAM - NY', cost: 677 },
+    { name: 'WOOD VILLAGE - Wood Village - CA', cost: 911 },
+    { name: 'YORK HAVEN - YORK HAVEN - NY', cost: 577 },
+    { name: 'YORK SPRINGS - YORK SPRINGS - NY', cost: 577 },
+        ];
+
+        function showStatesList() {
+            filterStates();
+            document.getElementById('searchResults').style.display = 'block';
+        }
+
+        function filterStates() {
+            const input = document.getElementById('stateSearchInput').value.trim().toLowerCase();
+            const resultsContainer = document.getElementById('searchResults');
+            resultsContainer.innerHTML = '';
+
+            const filtered = statesList.filter(s => s.name.toLowerCase().includes(input));
+
+            if (filtered.length === 0) {
+                resultsContainer.innerHTML = '<div class="search-item" style="color: #94a3b8;">لا توجد نتائج مطابقة</div>';
+            } else {
+                filtered.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'search-item';
+                    div.innerHTML = `<span><strong>${item.name}</strong></span> <span style="color: var(--primary-blue); font-weight: bold;">${item.cost} ر.ع</span>`;
+                    div.onclick = function() {
+                        document.getElementById('stateSearchInput').value = item.name;
+                        currentShippingCostOMR = item.cost;
+                        resultsContainer.style.display = 'none';
+                        calculateTotal();
+                    };
+                    resultsContainer.appendChild(div);
+                });
+            }
+            resultsContainer.style.display = 'block';
+        }
+
+        document.addEventListener('click', function(e) {
+            const container = document.querySelector('.search-box-container');
+            if (container && !container.contains(e.target)) {
+                document.getElementById('searchResults').style.display = 'none';
+            }
+        });
+
+        // رسوم COPART AUCTION FEE 23/09/2024
+        function getCopartFee(bid) {
+            if (bid <= 0) return 0;
+            if (bid <= 49.99) return 170;
+            if (bid <= 99.99) return 190;
+            if (bid <= 199.99) return 240;
+            if (bid <= 299.99) return 290;
+            if (bid <= 349.99) return 298;
+            if (bid <= 399.99) return 305;
+            if (bid <= 449.99) return 335;
+            if (bid <= 499.99) return 345;
+            if (bid <= 549.99) return 365;
+            if (bid <= 599.99) return 370;
+            if (bid <= 699.99) return 400;
+            if (bid <= 799.99) return 430;
+            if (bid <= 899.99) return 455;
+            if (bid <= 999.99) return 480;
+            if (bid <= 1199.99) return 555;
+            if (bid <= 1299.99) return 575;
+            if (bid <= 1399.99) return 590;
+            if (bid <= 1499.99) return 610;
+            if (bid <= 1599.99) return 635;
+            if (bid <= 1699.99) return 655;
+            if (bid <= 1799.99) return 675;
+            if (bid <= 1999.99) return 700;
+            if (bid <= 2399.99) return 740;
+            if (bid <= 2499.99) return 775;
+            if (bid <= 2999.99) return 815;
+            if (bid <= 3499.99) return 860;
+            if (bid <= 3999.99) return 910;
+            if (bid <= 4499.99) return 945;
+            if (bid <= 4999.99) return 970;
+            if (bid <= 5499.99) return 995;
+            if (bid <= 5999.99) return 1020;
+            if (bid <= 6499.99) return 1065;
+            if (bid <= 6999.99) return 1085;
+            if (bid <= 7499.99) return 1120;
+            if (bid <= 7999.99) return 1140;
+            if (bid <= 8499.99) return 1180;
+            if (bid <= 8999.99) return 1200;
+            if (bid <= 9999.99) return 1200;
+            if (bid <= 10499.99) return 1255;
+            if (bid <= 10999.99) return 1255;
+            if (bid <= 11499.99) return 1255;
+            if (bid <= 11999.99) return 1255;
+            if (bid <= 12499.99) return 1255;
+            if (bid <= 14999.99) return 1255;
+            
+            return 255 + (bid * 0.075);
+        }
+
+        // رسوم IAAI AUCTION FEE 04/11/2024
+        function getIaaiFee(bid) {
+            if (bid <= 0) return 0;
+            if (bid <= 49.99) return 135;
+            if (bid <= 99.99) return 155;
+            if (bid <= 199.99) return 240;
+            if (bid <= 299.99) return 290;
+            if (bid <= 349.99) return 298;
+            if (bid <= 399.99) return 305;
+            if (bid <= 449.99) return 335;
+            if (bid <= 499.99) return 345;
+            if (bid <= 549.99) return 380;
+            if (bid <= 599.99) return 385;
+            if (bid <= 699.99) return 415;
+            if (bid <= 799.99) return 445;
+            if (bid <= 899.99) return 470;
+            if (bid <= 999.99) return 495;
+            if (bid <= 1199.99) return 570;
+            if (bid <= 1299.99) return 590;
+            if (bid <= 1399.99) return 605;
+            if (bid <= 1499.99) return 625;
+            if (bid <= 1599.99) return 650;
+            if (bid <= 1699.99) return 670;
+            if (bid <= 1799.99) return 690;
+            if (bid <= 1999.99) return 715;
+            if (bid <= 2399.99) return 755;
+            if (bid <= 2499.99) return 790;
+            if (bid <= 2999.99) return 830;
+            if (bid <= 3499.99) return 875;
+            if (bid <= 3999.99) return 925;
+            if (bid <= 4499.99) return 960;
+            if (bid <= 4999.99) return 985;
+            if (bid <= 5499.99) return 1010;
+            if (bid <= 5999.99) return 1035;
+            if (bid <= 6499.99) return 1080;
+            if (bid <= 6999.99) return 1100;
+            if (bid <= 7499.99) return 1135;
+            if (bid <= 7999.99) return 1155;
+            if (bid <= 8499.99) return 1195;
+            if (bid <= 9999.99) return 1215;
+            if (bid <= 14999.99) return 1270;
+
+            // من 15000$ فما فوق: الرسم = (7.5% من سعر البيع) + 270 دولار ثابت
+            return (bid * 0.075) + 270;
+        }
+
+        function processVIN() {
+            const rawVal = document.getElementById('vinInput').value.trim().toUpperCase();
+            const badge = document.getElementById('vinStatus');
+            const carDetails = document.getElementById('carDetails');
+            const auctionSelect = document.getElementById('auctionSelect');
+
+            if (rawVal.includes('COPART')) auctionSelect.value = 'copart';
+            if (rawVal.includes('IAAI')) auctionSelect.value = 'iaai';
+
+            let vinMatches = rawVal.match(/[A-HJ-NPR-Z0-9]{17}/);
+            let vin = vinMatches ? vinMatches[0] : rawVal;
+
+            if (vin.length > 0) {
+                const firstChar = vin.charAt(0);
+                if (['1', '4', '5'].includes(firstChar)) {
+                    badge.className = 'vin-badge success';
+                    badge.innerHTML = '<i class="fa-solid fa-shield-halved"></i> تم التحقق: منشأ أمريكي - معفى من الجمارك (0%)';
+                } else {
+                    badge.className = 'vin-badge info';
+                    badge.innerHTML = '<i class="fa-solid fa-circle-info"></i> منشأ غير أمريكي - تخضع للضريبة الجمركية (5%)';
+                }
+            } else {
+                badge.style.display = 'none';
+                carDetails.style.display = 'none';
+                currentCarDescription = '';
+            }
+
+            if (vin.length === 17) {
+                fetchCarDetails(vin);
+            } else {
+                carDetails.style.display = 'none';
+                currentCarDescription = '';
+            }
+
+            calculateTotal();
+        }
+
+        function fetchCarDetails(vin) {
+            const carDetails = document.getElementById('carDetails');
+            carDetails.style.display = 'flex';
+            carDetails.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري فك تشفير تفاصيل السيارة...';
+
+            fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/decodevin/${vin}?format=json`)
+                .then(response => response.json())
+                .then(data => {
+                    const results = data.Results;
+                    const make = getVinResult(results, "Make");
+                    const model = getVinResult(results, "Model");
+                    const year = getVinResult(results, "Model Year");
+
+                    if (make && model) {
+                        currentCarDescription = `${year || ''} ${make} ${model}`.trim();
+                        carDetails.innerHTML = `<i class="fa-solid fa-car"></i> <span>المواصفات: <strong>${currentCarDescription}</strong></span>`;
+                    } else {
+                        currentCarDescription = '';
+                        carDetails.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> متعذر التعرف على موديل السيارة من الشاصي`;
+                    }
+                })
+                .catch(() => {
+                    currentCarDescription = '';
+                    carDetails.style.display = 'none';
+                });
+        }
+
+        function getVinResult(results, variableName) {
+            const item = results.find(r => r.Variable === variableName);
+            return item && item.Value && item.Value !== "Null" ? item.Value : null;
+        }
+
+        function calculateTotal() {
+            const bid = parseFloat(document.getElementById('bidAmount').value) || 0;
+            const auction = document.getElementById('auctionSelect').value;
+            const rawVal = document.getElementById('vinInput').value.trim().toUpperCase();
+            let vinMatches = rawVal.match(/[A-HJ-NPR-Z0-9]{17}/);
+            let vin = vinMatches ? vinMatches[0] : rawVal;
+
+            let auctionFeeUSD = getCopartFee(bid);
+            if (auction === 'iaai') auctionFeeUSD = getIaaiFee(bid);
+
+            let envFeeUSD = bid > 0 ? 15 : 0;
+
+            let totalAuctionUSD = bid + auctionFeeUSD + envFeeUSD;
+            let totalAuctionOMR = totalAuctionUSD * USD_TO_OMR;
+
+            let customsOMR = 0;
+            if (vin.length > 0 && !['1', '4', '5'].includes(vin.charAt(0)) && bid > 0) {
+                customsOMR = (totalAuctionOMR + currentShippingCostOMR) * 0.05;
+            }
+
+            // ضريبة القيمة المضافة 5% تحسب فقط على أجزاء المزاد الأساسية بالدولار مخصومة ومحولة بالريال
+            let vatOMR = 0;
+            if (bid > 0) {
+                vatOMR = totalAuctionOMR * 0.05;
+            }
+
+            let warRiskFeeOMR = bid > 0 ? 309 : 0;
+
+            let grandTotalOMR = totalAuctionOMR + currentShippingCostOMR + warRiskFeeOMR + customsOMR + vatOMR;
+            let grandTotalUSD = grandTotalOMR / USD_TO_OMR;
+
+            document.getElementById('outBidUSD').innerText = `$${bid.toLocaleString()}`;
+            document.getElementById('outAuctionFeeUSD').innerText = `$${auctionFeeUSD.toFixed(2)}`;
+            
+            document.getElementById('outShippingOMR').innerText = `${currentShippingCostOMR} ر.ع`;
+            document.getElementById('outCustomsOMR').innerText = `${customsOMR.toFixed(2)} ر.ع`;
+            document.getElementById('outVatOMR').innerText = `${vatOMR.toFixed(2)} ر.ع`;
+
+            document.getElementById('finalTotalOMR').innerText = `${grandTotalOMR.toFixed(2)} ر.ع`;
+            document.getElementById('finalTotalUSD').innerText = `($${grandTotalUSD.toFixed(2)})`;
+        }
+
+        function saveCurrentQuote() {
+            if (!currentUser) return;
+
+            const rawVin = document.getElementById('vinInput').value.trim();
+            const auction = document.getElementById('auctionSelect').value.toUpperCase();
+            const bid = document.getElementById('bidAmount').value || '0';
+            const state = document.getElementById('stateSearchInput').value.trim();
+            const total = document.getElementById('finalTotalOMR').innerText;
+
+            let displayVin = rawVin || 'سيارة بدون شاصي';
+            if (currentCarDescription) {
+                displayVin = `${currentCarDescription} (${displayVin})`;
+            }
+
+            savedQuotes.push({ 
+                id: Date.now(), 
+                vin: displayVin, 
+                rawVin: rawVin, 
+                auction: auction, 
+                bid: bid, 
+                state: state, 
+                shippingCost: currentShippingCostOMR, 
+                total: total 
+            });
+
+            saveQuotesToStorage();
+            renderSavedQuotes();
+        }
+
+        function editQuote(id) {
+            const q = savedQuotes.find(item => item.id === id);
+            if (!q) return;
+
+            document.getElementById('vinInput').value = q.rawVin || '';
+            document.getElementById('auctionSelect').value = q.auction.toLowerCase();
+            document.getElementById('bidAmount').value = q.bid;
+            
+            if (q.state) {
+                document.getElementById('stateSearchInput').value = q.state;
+                currentShippingCostOMR = q.shippingCost || 0;
+            }
+
+            processVIN();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function deleteQuote(id) {
+            savedQuotes = savedQuotes.filter(q => q.id !== id);
+            saveQuotesToStorage();
+            renderSavedQuotes();
+        }
+
+        function renderSavedQuotes() {
+            const tbody = document.getElementById('savedTableBody');
+            if (!tbody) return;
+
+            if (savedQuotes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">لا توجد حسابات محفوظة حالياً</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = savedQuotes.map(q => `
+                <tr>
+                    <td><strong>${q.vin}</strong></td>
+                    <td>${q.auction}</td>
+                    <td>$${q.bid}</td>
+                    <td style="color: var(--primary-blue); font-weight: bold;">${q.total}</td>
+                    <td style="text-align: center;">
+                        <button class="btn-edit" onclick="editQuote(${q.id})" title="تعديل الحسبة">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button class="btn-delete" onclick="deleteQuote(${q.id})" title="حذف الحسبة">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openAdminPanel() {
+            const section = document.getElementById('adminSection');
+            if (!section || !isAdmin()) return;
+            section.classList.add('visible');
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            renderUsers();
+        }
+
+        function addUser() {
+            if (!isAdmin()) return;
+            const username = document.getElementById('newUsername').value.trim().toLowerCase();
+            const password = document.getElementById('newPassword').value.trim();
+            if (!username || !password) { alert('أدخل اسم المستخدم وكلمة المرور.'); return; }
+            if (username === 'mohammed' || getAllUsers()[username]) { alert('اسم المستخدم مستخدم بالفعل.'); return; }
+            const users = getCustomUsers(); users[username] = password;
+            localStorage.setItem(CUSTOM_USERS_KEY, JSON.stringify(users));
+            document.getElementById('newUsername').value = ''; document.getElementById('newPassword').value = '';
+            renderUsers();
+        }
+
+        function deleteUser(username) {
+            if (!isAdmin()) return;
+            const users = getCustomUsers(); delete users[username];
+            localStorage.setItem(CUSTOM_USERS_KEY, JSON.stringify(users)); renderUsers();
+        }
+
+        function renderUsers() {
+            const tbody = document.getElementById('usersTableBody');
+            if (!tbody) return;
+            const users = getCustomUsers(); const names = Object.keys(users);
+            tbody.innerHTML = names.length ? names.map(name => `<tr><td>${name}</td><td style="text-align:center;"><button class="btn-delete" onclick="deleteUser('${name}')"><i class="fa-solid fa-trash-can"></i> حذف</button></td></tr>`).join('') : '<tr><td colspan="2" style="text-align:center;color:var(--text-muted);">لا توجد حسابات مضافة</td></tr>';
+        }
+
+        calculateTotal();
+    </script>
+</body>
+</html>
